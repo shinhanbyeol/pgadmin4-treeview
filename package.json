@@ -1,5 +1,6 @@
 {
-  "name": "react-aspen-demo",
+  "name": "pgadmin4-tree",
+  "version": "1.0",
   "private": true,
   "scripts": {
     "build": "webpack --mode=production",
