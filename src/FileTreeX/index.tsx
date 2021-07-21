@@ -22,7 +22,7 @@ import { showContextMenu } from '../services/contextMenu'
 import { DragAndDropService } from '../services/dragAndDrop'
 import { TreeModelX } from '../TreeModelX'
 
-import './styles.scss'
+import '../css/styles.scss'
 
 export class FileTreeX extends React.Component<IFileTreeXProps> {
     private fileTreeHandle: IFileTreeXHandle

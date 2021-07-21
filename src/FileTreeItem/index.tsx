@@ -4,7 +4,7 @@ import { ClasslistComposite } from 'aspen-decorations'
 import { Directory, FileEntry, IItemRendererProps, ItemType, PromptHandle, RenamePromptHandle, FileType } from 'react-aspen'
 import { DragAndDropService } from '../services/dragAndDrop'
 
-import './styles.scss'
+import '../css/styles.scss'
 
 interface IItemRendererXProps {
     /**
