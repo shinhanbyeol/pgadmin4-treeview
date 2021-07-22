@@ -15,7 +15,7 @@ import {
 import { Decoration, TargetMatchMode } from 'aspen-decorations'
 import { FileTreeItem } from '../FileTreeItem'
 import { Notificar, DisposablesComposite } from 'notificar'
-import { IFileTreeXHandle, IFileTreeXProps, FileTreeXEvent } from '../types'
+import { IFileTreeXHandle, IFileTreeXProps, FileTreeXEvent, IFileTreeXTriggerEvents } from '../types'
 import * as isValidFilename from 'valid-filename'
 import { KeyboardHotkeys } from '../services/keyboardHotkeys'
 import { showContextMenu } from '../services/contextMenu'
@@ -35,6 +35,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
     private disposables: DisposablesComposite
     private keyboardHotkeys: KeyboardHotkeys
     private dndService: DragAndDropService
+    private fileTreeEvent: IFileTreeXTriggerEvents
     constructor(props: IFileTreeXProps) {
         super(props)
         this.events = new Notificar()
@@ -76,7 +77,8 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
                 width={width}
                 model={model}
                 itemHeight={FileTreeItem.renderHeight}
-                onReady={this.handleTreeReady}>
+                onReady={this.handleTreeReady}
+                onEvent={this.handleTreeEvent}>
                 {(props: IItemRendererProps) => <FileTreeItem
                     item={props.item}
                     itemType={props.itemType}
@@ -88,11 +90,19 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
         </div>
     }
 
+    public componentDidMount() {
+        this.fileTreeEvent = this.props.onEvent
+	}
+
     componentWillUnmount() {
         const { model } = this.props
         model.decorations.removeDecoration(this.activeFileDec)
         model.decorations.removeDecoration(this.pseudoActiveFileDec)
         this.disposables.dispose()
+    }
+
+    private handleTreeEvent = (event: IFileTreeXTriggerEvents) => {
+        this.fileTreeEvent = this.props.onEvent
     }
 
     private handleTreeReady = (handle: IFileTreeHandle) => {
@@ -179,6 +189,8 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
         const dir = typeof pathOrDir === 'string'
             ? await this.fileTreeHandle.getFileHandle(pathOrDir)
             : pathOrDir
+
+        await this.fileTreeEvent.onEvent('beforeopen', dir)
         if (dir.type === FileType.Directory) {
             if ((dir as Directory).expanded) {
                 this.fileTreeHandle.closeDirectory(dir as Directory)
@@ -264,9 +276,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
     }
 
     private handleItemClicked = (ev: React.MouseEvent, item: FileOrDir, type: ItemType) => {
-        if (type === ItemType.File) {
-            this.setActiveFile(item as FileEntry)
-        }
+        this.setActiveFile(item as FileEntry)
         if (type === ItemType.Directory) {
             this.toggleDirectory(item as Directory)
         }

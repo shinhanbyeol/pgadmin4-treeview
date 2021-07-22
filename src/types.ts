@@ -2,9 +2,15 @@ import { IFileTreeHandle, FileEntry, Directory, TreeModel, FileType, IFileEntryI
 import { IDisposable } from 'notificar'
 import { TreeModelX } from './TreeModelX'
 
+
+export interface IFileTreeXTriggerEvents {
+    onEvent(event: string, path: string) => boolean | Promise<boolean>
+}
+
 export interface IItemRendererX extends IItemRenderer {
     getBoundingClientRectForItem(item: FileEntry | Directory): ClientRect
 }
+
 // Here imagination is your limit! IFileTreeHandle has core low-level features you can build on top of as your application needs
 export interface IFileTreeXHandle extends IFileTreeHandle {
     getActiveFile(): FileEntry | Directory
@@ -53,6 +59,7 @@ export interface IFileTreeXProps {
      */
     create: (path: string, type: FileType) => IFileEntryItem | Promise<IFileEntryItem>
     onReady?: (handle: IFileTreeXHandle) => void
+    onEvent?: (event: IFileTreeXTriggerEvents) => void
 }
 
 export enum FileTreeXEvent {
