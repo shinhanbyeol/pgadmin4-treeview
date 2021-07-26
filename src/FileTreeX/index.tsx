@@ -120,7 +120,14 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
             newFile: async (dirOrPath: Directory | string) => this.supervisePrompt(await handle.promptNewFile(dirOrPath as any)),
             newFolder: async (dirOrPath: Directory | string) => this.supervisePrompt(await handle.promptNewDirectory(dirOrPath as any)),
             onBlur: (callback) => this.events.add(FileTreeXEvent.OnBlur, callback),
-            hasDirectFocus: () => this.wrapperRef.current === document.activeElement
+            hasDirectFocus: () => this.wrapperRef.current === document.activeElement,
+            first: this.first,
+            parent: this.parent,
+            hasParent: this.hasParent,
+            isOpen: this.isOpen,
+            isClosed: this.isClosed,
+            itemData: this.itemData,
+            children: this.children
         }
 
         model.decorations.addDecoration(this.activeFileDec)
@@ -164,6 +171,10 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
         if (fileH) {
             await this.fileTreeHandle.ensureVisible(fileH)
         }
+        if(!await this.fileTreeEvent.onEvent(window.event, 'selected', fileH)) {
+            throw new Error("selected failed.");
+        }
+
     }
     private setPseudoActiveFile = async (fileOrDirOrPath: FileOrDir | string): Promise<void> => {
         const fileH = typeof fileOrDirOrPath === 'string'
@@ -183,6 +194,97 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
         if (fileH) {
             await this.fileTreeHandle.ensureVisible(fileH)
         }
+        if(!await this.fileTreeEvent.onEvent(window.event, 'selected', fileH)) {
+            throw new Error("selected failed.");
+        }
+    }
+
+    private first = async (fileOrDirOrPath: FileOrDir | string) => {
+        const fileH = typeof fileOrDirOrPath === 'string'
+            ? await this.fileTreeHandle.getFileHandle(fileOrDirOrPath)
+            : fileOrDirOrPath
+
+        if (fileH === undefined || fileH === null) { return this.props.model.root.children[0] }
+
+        if (fileH.branchSize > 0) {
+            return fileH.children[0]
+        }
+        return null
+    }
+
+    private parent = async (fileOrDirOrPath: FileOrDir | string) => {
+        const fileH = typeof fileOrDirOrPath === 'string'
+            ? await this.fileTreeHandle.getFileHandle(fileOrDirOrPath)
+            : fileOrDirOrPath
+
+        if (fileH === FileType.Directory || fileH === FileType.File) {
+            return fileH.parent
+        }
+
+        return null
+    }
+
+
+    private hasParent = async (fileOrDirOrPath: FileOrDir | string) => {
+        const fileH = typeof fileOrDirOrPath === 'string'
+            ? await this.fileTreeHandle.getFileHandle(fileOrDirOrPath)
+            : fileOrDirOrPath
+
+        if (fileH === FileType.Directory || fileH === FileType.File) {
+            return fileH.parent ? true : false
+        }
+
+        return false
+    }
+
+    private children = async (fileOrDirOrPath: FileOrDir | string) => {
+        const fileH = typeof fileOrDirOrPath === 'string'
+            ? await this.fileTreeHandle.getFileHandle(fileOrDirOrPath)
+            : fileOrDirOrPath
+
+        if (fileH === FileType.Directory) {
+            return fileH.children
+        }
+
+        return null
+    }
+
+
+    private isOpen = async (fileOrDirOrPath: FileOrDir | string) => {
+        const fileH = typeof fileOrDirOrPath === 'string'
+            ? await this.fileTreeHandle.getFileHandle(fileOrDirOrPath)
+            : fileOrDirOrPath
+
+        if (fileH === FileType.Directory) {
+            return fileH.isExpanded
+        }
+
+        return false
+    }
+
+
+     private isClosed = async (fileOrDirOrPath: FileOrDir | string) => {
+        const fileH = typeof fileOrDirOrPath === 'string'
+            ? await this.fileTreeHandle.getFileHandle(fileOrDirOrPath)
+            : fileOrDirOrPath
+
+        if (fileH === FileType.Directory || fileH === FileType.File) {
+             return !fileH.isExpanded
+        }
+
+        return false
+    }
+
+    private itemData = async (fileOrDirOrPath: FileOrDir | string) => {
+        const fileH = typeof fileOrDirOrPath === 'string'
+            ? await this.fileTreeHandle.getFileHandle(fileOrDirOrPath)
+            : fileOrDirOrPath
+
+        if (fileH === FileType.Directory || fileH === FileType.File) {
+             return fileH._metadata
+        }
+
+        return null
     }
 
     private toggleDirectory = async (pathOrDir: string | Directory) => {
@@ -190,12 +292,20 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
             ? await this.fileTreeHandle.getFileHandle(pathOrDir)
             : pathOrDir
 
-        await this.fileTreeEvent.onEvent('beforeopen', dir)
         if (dir.type === FileType.Directory) {
             if ((dir as Directory).expanded) {
                 this.fileTreeHandle.closeDirectory(dir as Directory)
+                if(!await this.fileTreeEvent.onEvent(window.event, 'closed', dir)) {
+                    throw new Error("Closed failed.");
+                }
             } else {
-                this.fileTreeHandle.openDirectory(dir as Directory)
+                if(!await this.fileTreeEvent.onEvent(window.event, 'beforeopen', dir)) {
+                    throw new Error("Beforeopen failed.");
+                }
+                await this.fileTreeHandle.openDirectory(dir as Directory)
+                if(!await this.fileTreeEvent.onEvent(window.event, 'opened', dir)) {
+                    throw new Error("Opened failed.");
+                }
             }
         }
     }
@@ -275,10 +385,10 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
         this.events.dispatch(FileTreeXEvent.OnBlur)
     }
 
-    private handleItemClicked = (ev: React.MouseEvent, item: FileOrDir, type: ItemType) => {
+    private handleItemClicked = async (ev: React.MouseEvent, item: FileOrDir, type: ItemType) => {
         this.setActiveFile(item as FileEntry)
         if (type === ItemType.Directory) {
-            this.toggleDirectory(item as Directory)
+            await this.toggleDirectory(item as Directory)
         }
     }
 
@@ -301,6 +411,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
 
     private handleClick = (ev: React.MouseEvent) => {
         // clicked in "blank space"
+        console.log(ev)
         if (ev.currentTarget === ev.target) {
             this.setPseudoActiveFile(null)
         }

@@ -34,6 +34,28 @@ export interface IFileTreeXHandle extends IFileTreeHandle {
     toggleDirectory(path: string)
     toggleDirectory(dir: Directory)
 
+    first(file: FileEntry): FileEntry | Directory
+    first(dir: Directory): FileEntry | Directory
+    first(): FileEntry | Directory
+
+    parent(file: FileEntry): Directory
+    parent(dir: Directory): Directory
+
+    hasParent(file: FileEntry): boolean
+    hasParent(dir: Directory): boolean
+
+    isOpen(file: FileEntry): boolean
+    isOpen(dir: Directory): boolean
+
+    isClosed(file: FileEntry): boolean
+    isClosed(dir: Directory): boolean
+
+    itemData(file: FileEntry): array
+    itemData(dir: Directory): array
+
+    children(file: FileEntry): array
+    children(dir: Directory): array
+
     getModel(): TreeModelX
     /**
      * If document.activeElement === filetree wrapper element
