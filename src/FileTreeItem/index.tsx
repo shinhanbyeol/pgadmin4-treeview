@@ -1,8 +1,9 @@
 import cn from 'classnames'
 import * as React from 'react'
 import { ClasslistComposite } from 'aspen-decorations'
-import { Directory, FileEntry, IItemRendererProps, ItemType, PromptHandle, RenamePromptHandle, FileType } from 'react-aspen'
+import { Directory, FileEntry, IItemRendererProps, ItemType, PromptHandle, RenamePromptHandle, FileType} from 'react-aspen'
 import { DragAndDropService } from '../services/dragAndDrop'
+import {IFileTreeXTriggerEvents } from '../types'
 
 import '../css/styles.scss'
 
@@ -35,6 +36,8 @@ export class FileTreeItem extends React.Component<IItemRendererXProps & IItemRen
     // ensure this syncs up with what goes in CSS, (em, px, % etc.) and what ultimately renders on the page
     public static readonly renderHeight: number = 24
     private static readonly itemIdToRefMap: Map<number, HTMLDivElement> = new Map()
+    private static readonly refToItemIdMap: Map<number, HTMLDivElement> = new Map()
+    private fileTreeEvent: IFileTreeXTriggerEvents
 
     constructor(props) {
         super(props)
@@ -99,8 +102,16 @@ export class FileTreeItem extends React.Component<IItemRendererXProps & IItemRen
     }
 
     public componentDidMount() {
+        this.fileTreeEvent = this.props.onEvent
         if (this.props.decorations) {
             this.props.decorations.addChangeListener(this.forceUpdate)
+            this.setActiveFile()
+        }
+    }
+
+     private setActiveFile = async (): Promise<void> => {
+        if(!await this.fileTreeEvent.onEvent(window.event, 'added', this)) {
+            throw new Error("added failed.");
         }
     }
 
@@ -124,6 +135,7 @@ export class FileTreeItem extends React.Component<IItemRendererXProps & IItemRen
             FileTreeItem.itemIdToRefMap.delete(this.props.item.id)
         } else {
             FileTreeItem.itemIdToRefMap.set(this.props.item.id, r)
+            FileTreeItem.refToItemIdMap.set(r, this.props.item)
         }
     }
 

@@ -85,7 +85,8 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
                     decorations={decorations.getDecorations(props.item as any)}
                     dndService={this.dndService}
                     onClick={this.handleItemClicked}
-                    onContextMenu={this.handleItemCtxMenu} />}
+                    onContextMenu={this.handleItemCtxMenu}
+                    onEvent={this.props.onEvent}/>}
             </FileTree>
         </div>
     }
@@ -127,7 +128,8 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
             isOpen: this.isOpen,
             isClosed: this.isClosed,
             itemData: this.itemData,
-            children: this.children
+            children: this.children,
+            getItemFromDOM: this.getItemFromDOM
         }
 
         model.decorations.addDecoration(this.activeFileDec)
@@ -281,7 +283,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
             : fileOrDirOrPath
 
         if (fileH === FileType.Directory || fileH === FileType.File) {
-             return fileH._metadata
+             return fileH._metadata.data
         }
 
         return null
@@ -387,7 +389,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
 
     private handleItemClicked = async (ev: React.MouseEvent, item: FileOrDir, type: ItemType) => {
         this.setActiveFile(item as FileEntry)
-        if (type === ItemType.Directory) {
+        if (type === ItemType.Directory && ev.target.className.includes("directory-toggle")) {
             await this.toggleDirectory(item as Directory)
         }
     }
@@ -409,9 +411,12 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
 
     }
 
+    private getItemFromDOM = (clientReact) => {
+        return FileTreeItem.itemIdToRefMap.get(clientReact);
+    }
+
     private handleClick = (ev: React.MouseEvent) => {
         // clicked in "blank space"
-        console.log(ev)
         if (ev.currentTarget === ev.target) {
             this.setPseudoActiveFile(null)
         }
