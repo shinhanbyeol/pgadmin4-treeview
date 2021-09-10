@@ -4,7 +4,7 @@ import { TreeModelX } from './TreeModelX'
 
 
 export interface IFileTreeXTriggerEvents {
-    onEvent(event: string, path: string) => boolean | Promise<boolean>
+    onEvent(event: string, path: string): boolean | Promise<boolean>
 }
 
 export interface IItemRendererX extends IItemRenderer {
@@ -86,4 +86,5 @@ export interface IFileTreeXProps {
 
 export enum FileTreeXEvent {
     OnBlur,
+    onTreeEvents,
 }

@@ -64,6 +64,13 @@ export class FileTreeItem extends React.Component<IItemRendererXProps & IItemRen
                 ? 'file'
                 : 'directory'
 
+        if (this.props.item.parent.path) {
+          this.props.item.resolvedPathCache = this.props.item.parent.path + "/" + this.props.item._metadata.data.id
+        }
+
+        const itemChildren = item.children && item.children.length > 0 && item._metadata.data._type.indexOf('coll-') !== -1 ? "(" + item.children.length + ")" : ""
+        const is_root = this.props.item.parent.path === '/browser'
+
         return (
             <div
                 className={cn('file-entry', {
@@ -74,7 +81,8 @@ export class FileTreeItem extends React.Component<IItemRendererXProps & IItemRen
                 data-depth={item.depth}
                 onContextMenu={this.handleContextMenu}
                 onClick={this.handleClick}
-                onDragStart={this.handleDragStart}
+                onDoubleClick={this.handleDoubleClick}
+                onDragStart={this.handleDragStartItem}
                 onDragEnd={this.handleDragEnd}
                 onDragEnter={this.handleDragEnter}
                 onDragOver={this.handleDragOver}
@@ -90,29 +98,28 @@ export class FileTreeItem extends React.Component<IItemRendererXProps & IItemRen
                 }
 
                 <span className='file-label'>
-                    <i className={cn('file-icon', isNewPrompt ? 'new' : '', fileOrDir)} />
+                    <i className={cn('file-icon aciTreeIcon', item._metadata && item._metadata.data.icon ? item._metadata.data.icon : fileOrDir)} />
                     <span className='file-name'>
                         {isPrompt && item instanceof PromptHandle
                             ? <><item.ProxiedInput /><span className='prompt-err-msg'></span></>
                             : (item as FileEntry).fileName
-                        }
+                        } {itemChildren}
                     </span>
                 </span>
             </div>)
     }
 
     public componentDidMount() {
-        this.fileTreeEvent = this.props.onEvent
+        this.events = this.props.events
+        this.props.item.resolvedPathCache = this.props.item.parent.path + "/" + this.props.item._metadata.data.id
         if (this.props.decorations) {
             this.props.decorations.addChangeListener(this.forceUpdate)
-            this.setActiveFile()
         }
+        this.setActiveFile(this.props.item)
     }
 
-     private setActiveFile = async (): Promise<void> => {
-        if(!await this.fileTreeEvent.onEvent(window.event, 'added', this)) {
-            throw new Error("added failed.");
-        }
+    private setActiveFile = async (FileOrDir): Promise<void> => {
+        this.events.dispatch(FileTreeXEvent.onTreeEvents, window.event, 'added', FileOrDir)
     }
 
     public componentWillUnmount() {
@@ -154,6 +161,23 @@ export class FileTreeItem extends React.Component<IItemRendererXProps & IItemRen
         const { item, itemType, onClick } = this.props
         if (itemType === ItemType.File || itemType === ItemType.Directory) {
             onClick(ev, item as FileEntry, itemType)
+        }
+    }
+
+    private handleDoubleClick = (ev: React.MouseEvent) => {
+        const { item, itemType, onDoubleClick } = this.props
+        if (itemType === ItemType.File || itemType === ItemType.Directory) {
+            onDoubleClick(ev, item as FileEntry, itemType)
+        }
+    }
+
+    private handleDragStartItem = (e: React.DragEvent) => {
+        const { item, itemType, dndService } = this.props
+        if (itemType === ItemType.File || itemType === ItemType.Directory) {
+            const ref = FileTreeItem.itemIdToRefMap.get(item.id)
+            if (ref) {
+                this.events.dispatch(FileTreeXEvent.onTreeEvents, e, 'dragstart', item)
+            }
         }
     }
 
