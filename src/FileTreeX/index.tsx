@@ -529,7 +529,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
     }
 
     private getItemFromDOM = (clientReact) => {
-        return FileTreeItem.itemIdToRefMap.get(clientReact);
+        return FileTreeItem.refToItemIdMap.get(clientReact);
     }
 
     private handleClick = (ev: React.MouseEvent) => {

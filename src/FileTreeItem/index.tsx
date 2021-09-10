@@ -3,7 +3,7 @@ import * as React from 'react'
 import { ClasslistComposite } from 'aspen-decorations'
 import { Directory, FileEntry, IItemRendererProps, ItemType, PromptHandle, RenamePromptHandle, FileType} from 'react-aspen'
 import { DragAndDropService } from '../services/dragAndDrop'
-import {IFileTreeXTriggerEvents } from '../types'
+import {IFileTreeXTriggerEvents, FileTreeXEvent } from '../types'
 
 import '../css/styles.scss'
 
