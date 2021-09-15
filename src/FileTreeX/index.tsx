@@ -229,6 +229,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
                 file: maybeFile,
             })
         }
+        this.changeDirectoryCount(parentDir);
     }
 
     private updateFileOrFolder = async (item, itemData): Promise<void> => {
@@ -242,12 +243,13 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
          const isOpen = item.isExpanded
          if (item.children && item.children.length > 0) {
              for(let entry of item.children) {
-                 await this.removeFileOrFolder(entry).then(val => {}, error => {console.warn(error)})
+                 await this.remove(entry).then(val => {}, error => {console.warn(error)})
              }
          }
          if (isOpen) {
-             this.fileTreeHandle.closeDirectory(item as Directory)
-             this.fileTreeHandle.openDirectory(item as Directory)
+             await this.fileTreeHandle.closeDirectory(item as Directory)
+             await this.fileTreeHandle.openDirectory(item as Directory)
+             this.changeDirectoryCount(item);
          }
     }
 
@@ -265,7 +267,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
                 if (parent._children.length == 0) { parent._children = null }
             }
         }
-
+        this.changeDirectoryCount(parent);
     }
 
     private first = async (fileOrDirOrPath: FileOrDir | string) => {
@@ -355,6 +357,26 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
         return null
     }
 
+    private changeDirectoryCount = async(pathOrDir: string | Directory): Promise<void> => {
+        const dir = typeof pathOrDir === 'string'
+            ? await this.fileTreeHandle.getFileHandle(pathOrDir)
+            : pathOrDir
+
+        if (dir.type === FileType.Directory) {
+            const ref = FileTreeItem.itemIdToRefMap.get(dir.id);
+            if (ref) {
+                ref.style.background = 'none'
+                const label$ = ref.querySelector('span.children-count') as HTMLDivElement
+                if(dir.children && dir.children.length > 0) {
+                    label$.innerHTML = "(" + dir.children.length + ")";
+                } else {
+                    label$.innerHTML = "";
+                }
+            }
+        }
+
+   }
+
     private toggleDirectory = async (pathOrDir: string | Directory) => {
         const dir = typeof pathOrDir === 'string'
             ? await this.fileTreeHandle.getFileHandle(pathOrDir)
@@ -370,7 +392,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
                 if (ref) {
                     ref.style.background = 'none'
                     const label$ = ref.querySelector('i.directory-toggle') as HTMLDivElement
-                    label$.className = "directory-loading";
+                    label$.classList.add("loading");
                 }
 
                 this.events.dispatch(FileTreeXEvent.onTreeEvents, window.event, 'beforeopen', dir)
@@ -384,8 +406,8 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
 
                 if (ref) {
                     ref.style.background = 'none'
-                    const label$ = ref.querySelector('i.directory-loading') as HTMLDivElement
-                    label$.className = "directory-toggle";
+                    const label$ = ref.querySelector('i.directory-toggle') as HTMLDivElement
+                    if (label$) label$.classList.remove("loading");
                 }
 
                 this.events.dispatch(FileTreeXEvent.onTreeEvents, window.event, 'opened', dir)
@@ -403,23 +425,6 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
             ref.style.background = 'none'
             const label$ = ref.querySelector('.file-label i') as HTMLDivElement
             label$.className = icon.icon;
-        }
-
-    }
-
-    private remove = async (item): Promise<void> => {
-        const {remove, model } = this.props
-        const path = item.path
-        await remove(path, false)
-        const dirName = model.root.pathfx.dirname(path);
-        const fileName = model.root.pathfx.basename(path);
-        const parent = item.parent
-        if (dirName === parent.path) {
-            const item_1 = parent._children.find((c) => c._metadata.data.id === fileName);
-            if (item_1) {
-                parent.unlinkItem(item_1);
-                if (parent._children.length == 0) { parent._children = null }
-            }
         }
 
     }

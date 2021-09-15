@@ -10,10 +10,10 @@ import '../css/styles.scss'
 interface IItemRendererXProps {
     /**
      * In this implementation, decoration are null when item is `PromptHandle`
-     * 
+     *
      * If you would like decorations for `PromptHandle`s, then get them using `DecorationManager#getDecorations(<target>)`.
      * Where `<target>` can be either `NewFilePromptHandle.parent` or `RenamePromptHandle.target` depending on type of `PromptHandle`
-     * 
+     *
      * To determine the type of `PromptHandle`, use `IItemRendererProps.itemType`
      */
     decorations: ClasslistComposite
@@ -103,8 +103,9 @@ export class FileTreeItem extends React.Component<IItemRendererXProps & IItemRen
                         {isPrompt && item instanceof PromptHandle
                             ? <><item.ProxiedInput /><span className='prompt-err-msg'></span></>
                             : (item as FileEntry).fileName
-                        } {itemChildren}
+                        }
                     </span>
+                    <span className='children-count'>{itemChildren}</span>
                 </span>
             </div>)
     }
