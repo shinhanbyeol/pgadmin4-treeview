@@ -142,7 +142,8 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
             update: this.update,
             refresh: this.refresh,
             setLabel: this.setLabel,
-            unload: this.unload
+            unload: this.unload,
+            deSelectActiveFile: this.deSelectActiveFile
         }
 
         model.decorations.addDecoration(this.activeFileDec)
