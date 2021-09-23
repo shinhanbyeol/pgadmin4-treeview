@@ -87,6 +87,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
                     onClick={this.handleItemClicked}
                     onDoubleClick={this.handleItemDoubleClicked}
                     onContextMenu={this.handleItemCtxMenu}
+                    changeDirectoryCount={this.changeDirectoryCount}
                     events={this.events}/>}
             </FileTree>
         </div>
@@ -140,6 +141,8 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
             remove: this.remove,
             update: this.update,
             refresh: this.refresh,
+            setLabel: this.setLabel,
+            unload: this.unload
         }
 
         model.decorations.addDecoration(this.activeFileDec)
@@ -179,12 +182,9 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
                 this.activeFileDec.addTarget(fileH as any, TargetMatchMode.Self)
             }
             this.activeFile = fileH
-        }
-        if (fileH) {
-            await this.fileTreeHandle.ensureVisible(fileH)
-        }
-        this.events.dispatch(FileTreeXEvent.onTreeEvents, window.event, 'selected', fileH)
+            this.events.dispatch(FileTreeXEvent.onTreeEvents, window.event, 'selected', fileH)
 
+        }
     }
 
     private deSelectActiveFile = async (fileOrDirOrPath: FileOrDir | string): Promise<void> => {
@@ -221,15 +221,26 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
 
     private create = async (parentDir, itemData): Promise<void> => {
         const {create, model } = this.props
-        const maybeFile = await create(parentDir.path, itemData)
-        if (maybeFile && maybeFile.type && maybeFile.name) {
-            model.root.inotify({
-                type: WatchEvent.Added,
-                directory: parentDir.path,
-                file: maybeFile,
-            })
+        const isOpen = parentDir.isExpanded
+        let maybeFile = undefined
+
+        if (isOpen && (parentDir._children == null || parentDir._children.length == 0)) {
+            await this.fileTreeHandle.closeDirectory(parentDir as Directory)
         }
-        this.changeDirectoryCount(parentDir);
+        if (!parentDir.isExpanded) {
+            await this.fileTreeHandle.openDirectory(parentDir as Directory)
+        } else {
+            maybeFile = await create(parentDir.path, itemData)
+            if (maybeFile && maybeFile.type && maybeFile.name) {
+                model.root.inotify({
+                    type: WatchEvent.Added,
+                    directory: parentDir.path,
+                    file: maybeFile,
+                })
+            }
+        }
+        this.changeDirectoryCount(parentDir)
+        return parentDir._children.find((c) => c._metadata.data.id === itemData.data.id);
     }
 
     private updateFileOrFolder = async (item, itemData): Promise<void> => {
@@ -249,7 +260,21 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
          if (isOpen) {
              await this.fileTreeHandle.closeDirectory(item as Directory)
              await this.fileTreeHandle.openDirectory(item as Directory)
-             this.changeDirectoryCount(item);
+             this.changeDirectoryCount(item)
+         }
+    }
+
+    private unload = async (item): Promise<void> => {
+         const {remove, model } = this.props
+         const isOpen = item.isExpanded
+         if (item.children && item.children.length > 0) {
+             for(let entry of item.children) {
+                 await this.remove(entry).then(val => {}, error => {console.warn(error)})
+             }
+         }
+         if (isOpen) {
+             await this.fileTreeHandle.closeDirectory(item as Directory)
+             this.changeDirectoryCount(item)
          }
     }
 
@@ -265,9 +290,11 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
             if (item_1) {
                 parent.unlinkItem(item_1);
                 if (parent._children.length == 0) { parent._children = null }
+                this.changeDirectoryCount(parent)
+                this.events.dispatch(FileTreeXEvent.onTreeEvents, window.event, 'removed', item)
+
             }
         }
-        this.changeDirectoryCount(parent);
     }
 
     private first = async (fileOrDirOrPath: FileOrDir | string) => {
@@ -357,12 +384,33 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
         return null
     }
 
+    private setLabel = async(pathOrDir: string | Directory, label: string): Promise<void> => {
+        const dir = typeof pathOrDir === 'string'
+            ? await this.fileTreeHandle.getFileHandle(pathOrDir)
+            : pathOrDir
+
+        const ref = FileTreeItem.itemIdToRefMap.get(dir.id);
+        if (ref) {
+            ref.style.background = 'none'
+            const label$ = ref.querySelector('span.file-name') as HTMLDivElement
+
+            if (label$) {
+                if (typeof(label) == "object" && label.label) {
+                    label = label.label
+                }
+                label$.innerHTML = label;
+            }
+
+        }
+
+   }
+
     private changeDirectoryCount = async(pathOrDir: string | Directory): Promise<void> => {
         const dir = typeof pathOrDir === 'string'
             ? await this.fileTreeHandle.getFileHandle(pathOrDir)
             : pathOrDir
 
-        if (dir.type === FileType.Directory) {
+        if (dir.type === FileType.Directory && dir._metadata.data && dir._metadata.data.is_collection === true) {
             const ref = FileTreeItem.itemIdToRefMap.get(dir.id);
             if (ref) {
                 ref.style.background = 'none'

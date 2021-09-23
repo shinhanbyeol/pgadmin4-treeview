@@ -4,6 +4,7 @@ import { ClasslistComposite } from 'aspen-decorations'
 import { Directory, FileEntry, IItemRendererProps, ItemType, PromptHandle, RenamePromptHandle, FileType} from 'react-aspen'
 import { DragAndDropService } from '../services/dragAndDrop'
 import {IFileTreeXTriggerEvents, FileTreeXEvent } from '../types'
+import _ from 'lodash'
 
 import '../css/styles.scss'
 
@@ -64,7 +65,7 @@ export class FileTreeItem extends React.Component<IItemRendererXProps & IItemRen
                 ? 'file'
                 : 'directory'
 
-        if (this.props.item.parent.path) {
+        if (this.props.item.parent && this.props.item.parent.path) {
           this.props.item.resolvedPathCache = this.props.item.parent.path + "/" + this.props.item._metadata.data.id
         }
 
@@ -89,8 +90,7 @@ export class FileTreeItem extends React.Component<IItemRendererXProps & IItemRen
                 onDrop={this.handleDrop}
                 // required for rendering context menus when opened through context menu button on keyboard
                 ref={this.handleDivRef}
-                draggable={true}
-                title={!isPrompt ? (item as FileEntry).path : null}>
+                draggable={true}>
 
                 {!isNewPrompt && fileOrDir === 'directory' ?
                     <i className={cn('directory-toggle', isDirExpanded ? 'open' : '')} />
@@ -100,12 +100,10 @@ export class FileTreeItem extends React.Component<IItemRendererXProps & IItemRen
                 <span className='file-label'>
                     <i className={cn('file-icon aciTreeIcon', item._metadata && item._metadata.data.icon ? item._metadata.data.icon : fileOrDir)} />
                     <span className='file-name'>
-                        {isPrompt && item instanceof PromptHandle
-                            ? <><item.ProxiedInput /><span className='prompt-err-msg'></span></>
-                            : (item as FileEntry).fileName
-                        }
+                        { _.unescape(this.props.item.getMetadata('data')._label)}
+                        <span className='children-count'>{itemChildren}</span>
                     </span>
-                    <span className='children-count'>{itemChildren}</span>
+
                 </span>
             </div>)
     }
@@ -120,7 +118,11 @@ export class FileTreeItem extends React.Component<IItemRendererXProps & IItemRen
     }
 
     private setActiveFile = async (FileOrDir): Promise<void> => {
-        this.events.dispatch(FileTreeXEvent.onTreeEvents, window.event, 'added', FileOrDir)
+        this.props.changeDirectoryCount(FileOrDir.parent)
+        if(FileOrDir._loaded !== true) {
+            this.events.dispatch(FileTreeXEvent.onTreeEvents, window.event, 'added', FileOrDir)
+        }
+        FileOrDir._loaded = true
     }
 
     public componentWillUnmount() {

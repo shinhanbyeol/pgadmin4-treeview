@@ -23,7 +23,8 @@
     "react": "^16.6.3",
     "react-aspen": "^1.1.1",
     "react-dom": "^16.6.3",
-    "valid-filename": "^2.0.1"
+    "valid-filename": "^2.0.1",
+    "lodash": "4.*"
   },
   "devDependencies": {
     "css-loader": "^2.0.1",
