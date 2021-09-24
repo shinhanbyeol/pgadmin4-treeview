@@ -228,7 +228,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
         if (isOpen && (parentDir._children == null || parentDir._children.length == 0)) {
             await this.fileTreeHandle.closeDirectory(parentDir as Directory)
         }
-        if (!parentDir.isExpanded) {
+        if (!parentDir.isExpanded && parentDir._children == null && parentDir._children.length == 0) {
             await this.fileTreeHandle.openDirectory(parentDir as Directory)
         } else {
             maybeFile = await create(parentDir.path, itemData)
@@ -471,7 +471,6 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
 
         const ref = FileTreeItem.itemIdToRefMap.get(dir.id);
         if (ref) {
-            ref.style.background = 'none'
             const label$ = ref.querySelector('.file-label i') as HTMLDivElement
             label$.className = icon.icon;
         }
