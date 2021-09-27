@@ -228,9 +228,10 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
         if (isOpen && (parentDir._children == null || parentDir._children.length == 0)) {
             await this.fileTreeHandle.closeDirectory(parentDir as Directory)
         }
-        if (!parentDir.isExpanded && parentDir._children == null && parentDir._children.length == 0) {
+        if (!parentDir.isExpanded && (parentDir._children == null || parentDir._children.length == 0)) {
             await this.fileTreeHandle.openDirectory(parentDir as Directory)
         } else {
+            await this.fileTreeHandle.openDirectory(parentDir as Directory)
             maybeFile = await create(parentDir.path, itemData)
             if (maybeFile && maybeFile.type && maybeFile.name) {
                 model.root.inotify({
@@ -241,7 +242,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
             }
         }
         this.changeDirectoryCount(parentDir)
-        return parentDir._children.find((c) => c._metadata.data.id === itemData.data.id);
+        return parentDir._children.find((c) => c._metadata.data.id === itemData.id);
     }
 
     private updateFileOrFolder = async (item, itemData): Promise<void> => {
