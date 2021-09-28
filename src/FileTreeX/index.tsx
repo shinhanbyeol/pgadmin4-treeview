@@ -445,7 +445,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
                     label$.classList.add("loading");
                 }
 
-                this.events.dispatch(FileTreeXEvent.onTreeEvents, window.event, 'beforeopen', dir)
+                await this.events.dispatch(FileTreeXEvent.onTreeEvents, window.event, 'beforeopen', dir)
                 await this.fileTreeHandle.openDirectory(dir as Directory)
 
                 if (dir.children && dir.children.length > 0) {
@@ -554,15 +554,17 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
     }
 
     private handleItemClicked = async (ev: React.MouseEvent, item: FileOrDir, type: ItemType) => {
-        this.setActiveFile(item as FileEntry)
         if (type === ItemType.Directory && ev.target.className.includes("directory-toggle")) {
             await this.toggleDirectory(item as Directory)
         }
+        await this.setActiveFile(item as FileEntry)
+
     }
 
     private handleItemDoubleClicked = async (ev: React.MouseEvent, item: FileOrDir, type: ItemType) => {
-        this.setActiveFile(item as FileEntry)
         await this.toggleDirectory(item as Directory)
+        await this.setActiveFile(item as FileEntry)
+
     }
 
     private handleContextMenu = (ev: React.MouseEvent) => {
