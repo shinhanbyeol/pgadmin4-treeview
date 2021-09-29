@@ -31,17 +31,17 @@ export class KeyboardHotkeys {
 
     private jumpToFirstItem = (): void => {
         const { root } = this.fileTreeX.getModel()
-        this.fileTreeX.setPseudoActiveFile(root.getFileEntryAtIndex(0))
+        this.fileTreeX.setActiveFile(root.getFileEntryAtIndex(0))
     }
 
     private jumpToLastItem = (): void => {
         const { root } = this.fileTreeX.getModel()
-        this.fileTreeX.setPseudoActiveFile(root.getFileEntryAtIndex(root.branchSize - 1))
+        this.fileTreeX.setActiveFile(root.getFileEntryAtIndex(root.branchSize - 1))
     }
 
     private jumpToNextItem = (): void => {
         const { root } = this.fileTreeX.getModel()
-        let currentPseudoActive = this.fileTreeX.getPseudoActiveFile()
+        let currentPseudoActive = this.fileTreeX.getActiveFile()
         if (!currentPseudoActive) {
             const selectedFile = this.fileTreeX.getActiveFile()
             if (selectedFile) {
@@ -54,13 +54,13 @@ export class KeyboardHotkeys {
         if (idx + 1 > root.branchSize) {
             return this.jumpToFirstItem()
         } else if (idx > -1) {
-            this.fileTreeX.setPseudoActiveFile(root.getFileEntryAtIndex(idx + 1))
+            this.fileTreeX.setActiveFile(root.getFileEntryAtIndex(idx + 1))
         }
     }
 
     private jumpToPrevItem = (): void => {
         const { root } = this.fileTreeX.getModel()
-        let currentPseudoActive = this.fileTreeX.getPseudoActiveFile()
+        let currentPseudoActive = this.fileTreeX.getActiveFile()
         if (!currentPseudoActive) {
             const selectedFile = this.fileTreeX.getActiveFile()
             if (selectedFile) {
@@ -73,12 +73,12 @@ export class KeyboardHotkeys {
         if (idx - 1 < 0) {
             return this.jumpToLastItem()
         } else if (idx > -1) {
-            this.fileTreeX.setPseudoActiveFile(root.getFileEntryAtIndex(idx - 1))
+            this.fileTreeX.setActiveFile(root.getFileEntryAtIndex(idx - 1))
         }
     }
 
     private expandOrJumpToFirstChild(): void {
-        const currentPseudoActive = this.fileTreeX.getPseudoActiveFile()
+        const currentPseudoActive = this.fileTreeX.getActiveFile()
         if (currentPseudoActive && currentPseudoActive.type === FileType.Directory) {
             if ((currentPseudoActive as Directory).expanded) {
                 return this.jumpToNextItem()
@@ -89,24 +89,24 @@ export class KeyboardHotkeys {
     }
 
     private collapseOrJumpToFirstParent(): void {
-        const currentPseudoActive = this.fileTreeX.getPseudoActiveFile()
+        const currentPseudoActive = this.fileTreeX.getActiveFile()
         if (currentPseudoActive) {
             if (currentPseudoActive.type === FileType.Directory && (currentPseudoActive as Directory).expanded) {
                 return this.fileTreeX.closeDirectory(currentPseudoActive as Directory)
             }
-            this.fileTreeX.setPseudoActiveFile(currentPseudoActive.parent)
+            this.fileTreeX.setActiveFile(currentPseudoActive.parent)
         }
     }
 
     private triggerRename(): void {
-        const currentPseudoActive = this.fileTreeX.getPseudoActiveFile()
+        const currentPseudoActive = this.fileTreeX.getActiveFile()
         if (currentPseudoActive) {
             this.fileTreeX.rename(currentPseudoActive)
         }
     }
 
     private selectFileOrToggleDirState = (): void => {
-        const currentPseudoActive = this.fileTreeX.getPseudoActiveFile()
+        const currentPseudoActive = this.fileTreeX.getActiveFile()
         if (!currentPseudoActive) { return }
         if (currentPseudoActive.type === FileType.Directory) {
             this.fileTreeX.toggleDirectory(currentPseudoActive as Directory)
@@ -116,7 +116,7 @@ export class KeyboardHotkeys {
     }
 
     private toggleDirectoryExpand = (): void => {
-        const currentPseudoActive = this.fileTreeX.getPseudoActiveFile()
+        const currentPseudoActive = this.fileTreeX.getActiveFile()
         if (!currentPseudoActive) { return }
         if (currentPseudoActive.type === FileType.Directory) {
             this.fileTreeX.toggleDirectory(currentPseudoActive as Directory)
@@ -124,7 +124,7 @@ export class KeyboardHotkeys {
     }
 
     private resetSteppedOrSelectedItem = (): void => {
-        const currentPseudoActive = this.fileTreeX.getPseudoActiveFile()
+        const currentPseudoActive = this.fileTreeX.getActiveFile()
         if (currentPseudoActive) {
             return this.resetSteppedItem()
         }
@@ -132,6 +132,6 @@ export class KeyboardHotkeys {
     }
 
     private resetSteppedItem = () => {
-        this.fileTreeX.setPseudoActiveFile(null)
+        this.fileTreeX.setActiveFile(null)
     }
 }

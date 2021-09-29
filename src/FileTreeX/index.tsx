@@ -196,6 +196,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
         if (fileH === this.props.model.root) { return }
         if (this.activeFile === fileH) {
             this.activeFileDec.removeTarget(this.activeFile)
+            this.activeFile = null
         }
     }
 
@@ -242,7 +243,9 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
             }
         }
         this.changeDirectoryCount(parentDir)
-        return parentDir._children.find((c) => c._metadata.data.id === itemData.id);
+        let newItem = parentDir._children.find((c) => c._metadata.data.id === itemData.id)
+        newItem.resolvedPathCache = newItem.parent.path + "/" + newItem._metadata.data.id
+        return newItem
     }
 
     private updateFileOrFolder = async (item, itemData): Promise<void> => {
