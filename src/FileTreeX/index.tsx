@@ -143,7 +143,8 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
             refresh: this.refresh,
             setLabel: this.setLabel,
             unload: this.unload,
-            deSelectActiveFile: this.deSelectActiveFile
+            deSelectActiveFile: this.deSelectActiveFile,
+            resize: this.resize
         }
 
         model.decorations.addDecoration(this.activeFileDec)
@@ -604,6 +605,13 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
 
     private handleKeyDown = (ev: React.KeyboardEvent) => {
         return this.keyboardHotkeys.handleKeyDown(ev)
+    }
+
+    private resize = (scrollX, scrollY) => {
+        const scrollXPos = scrollX ? scrollX : 0
+        const scrollYPos = scrollY ? scrollY : this.props.model.state.scrollOffset
+        const div = this.wrapperRef.current.querySelector('div') as HTMLDivElement
+        div.scroll(scrollXPos, scrollYPos)
     }
 }
 
