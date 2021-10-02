@@ -170,7 +170,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
         }
     }
 
-    private setActiveFile = async (fileOrDirOrPath: FileOrDir | string): Promise<void> => {
+    private setActiveFile = async (fileOrDirOrPath: FileOrDir | string, ensureVisible): Promise<void> => {
         const fileH = typeof fileOrDirOrPath === 'string'
             ? await this.fileTreeHandle.getFileHandle(fileOrDirOrPath)
             : fileOrDirOrPath
@@ -186,6 +186,19 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
             this.activeFile = fileH
             this.events.dispatch(FileTreeXEvent.onTreeEvents, window.event, 'selected', fileH)
 
+            if (fileH && ensureVisible === true) {
+                await this.fileTreeHandle.ensureVisible(fileH)
+            }
+        }
+    }
+
+    private ensureVisible = async (fileOrDirOrPath: FileOrDir | string): Promise<void> => {
+        const fileH = typeof fileOrDirOrPath === 'string'
+            ? await this.fileTreeHandle.getFileHandle(fileOrDirOrPath)
+            : fileOrDirOrPath
+
+        if (fileH) {
+            await this.fileTreeHandle.ensureVisible(fileH)
         }
     }
 
@@ -223,6 +236,9 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
     }
 
     private create = async (parentDir, itemData): Promise<void> => {
+        if (parentDir == undefined || parentDir == null) {
+            parentDir = this.props.model.root
+        }
         const {create, model } = this.props
         const isOpen = parentDir.isExpanded
         let maybeFile = undefined
