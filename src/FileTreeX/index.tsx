@@ -21,6 +21,7 @@ import { KeyboardHotkeys } from '../services/keyboardHotkeys'
 import { showContextMenu } from '../services/contextMenu'
 import { DragAndDropService } from '../services/dragAndDrop'
 import { TreeModelX } from '../TreeModelX'
+import AutoSizer from "react-virtualized-auto-sizer";
 
 import '../css/styles.scss'
 
@@ -71,7 +72,16 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
             onContextMenu={this.handleContextMenu}
             onClick={this.handleClick}
             ref={this.wrapperRef}
+            style={{
+              height: "100vh",
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              flex: 1
+            }}
             tabIndex={-1}>
+            <AutoSizer onResize={this.onResize}>
+            {({ width, height }) => (
             <FileTree
                 height={height}
                 width={width}
@@ -90,6 +100,8 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
                     changeDirectoryCount={this.changeDirectoryCount}
                     events={this.events}/>}
             </FileTree>
+            )}
+         </AutoSizer>
         </div>
     }
 
@@ -187,7 +199,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
             this.events.dispatch(FileTreeXEvent.onTreeEvents, window.event, 'selected', fileH)
 
             if (fileH && ensureVisible === true) {
-                await this.fileTreeHandle.ensureVisible(fileH)
+                await this.fileTreeHandle.ensureVisible(fileH, 'center')
             }
         }
     }
@@ -623,11 +635,18 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
         return this.keyboardHotkeys.handleKeyDown(ev)
     }
 
+    private onResize = (...args) => {
+         if (this.wrapperRef.current != null) {
+            this.resize()
+         }
+    }
+
     private resize = (scrollX, scrollY) => {
         const scrollXPos = scrollX ? scrollX : 0
         const scrollYPos = scrollY ? scrollY : this.props.model.state.scrollOffset
-        const div = this.wrapperRef.current.querySelector('div') as HTMLDivElement
+        const div = this.wrapperRef.current.listRef.current._outerRef
         div.scroll(scrollXPos, scrollYPos)
+
     }
 }
 
