@@ -73,7 +73,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
             onClick={this.handleClick}
             ref={this.wrapperRef}
             style={{
-              height: "100vh",
+              height: "calc(100vh - 60px)",
               width: "100%",
               display: "flex",
               flexDirection: "column",
