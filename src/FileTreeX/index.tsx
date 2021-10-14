@@ -147,6 +147,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
             itemData: this.itemData,
             children: this.children,
             getItemFromDOM: this.getItemFromDOM,
+            getDOMFromItem: this.getDOMFromItem,
             onTreeEvents: (callback) => this.events.add(FileTreeXEvent.onTreeEvents, callback),
             addIcon: this.addIcon,
             create: this.create,
@@ -618,6 +619,10 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
 
     private getItemFromDOM = (clientReact) => {
         return FileTreeItem.refToItemIdMap.get(clientReact);
+    }
+
+    private getDOMFromItem = (item: FileOrDir) => {
+        return FileTreeItem.itemIdToRefMap.get(item.id);
     }
 
     private handleClick = (ev: React.MouseEvent) => {
