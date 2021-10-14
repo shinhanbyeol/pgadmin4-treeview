@@ -150,6 +150,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
             getDOMFromItem: this.getDOMFromItem,
             onTreeEvents: (callback) => this.events.add(FileTreeXEvent.onTreeEvents, callback),
             addIcon: this.addIcon,
+            addCssClass: this.addCssClass,
             create: this.create,
             remove: this.remove,
             update: this.update,
@@ -507,6 +508,22 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
         if (ref) {
             const label$ = ref.querySelector('.file-label i') as HTMLDivElement
             label$.className = icon.icon;
+        }
+
+    }
+
+    private addCssClass = async (pathOrDir: string | Directory, cssClass) => {
+        const dir = typeof pathOrDir === 'string'
+            ? await this.fileTreeHandle.getFileHandle(pathOrDir)
+            : pathOrDir
+
+        const ref = FileTreeItem.itemIdToRefMap.get(dir.id);
+        if (ref) {
+            ref.classList.add(cssClass)
+            if (!dir._metadata.data.extraClasses)
+                dir._metadata.data.extraClasses = []
+
+            dir._metadata.data.extraClasses.push(cssClass)
         }
 
     }

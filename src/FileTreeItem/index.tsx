@@ -71,6 +71,7 @@ export class FileTreeItem extends React.Component<IItemRendererXProps & IItemRen
 
         const itemChildren = item.children && item.children.length > 0 && item._metadata.data._type.indexOf('coll-') !== -1 ? "(" + item.children.length + ")" : ""
         const is_root = this.props.item.parent.path === '/browser'
+        const extraClasses = item._metadata.data.extraClasses ? item._metadata.data.extraClasses.join(' ') : ''
 
         return (
             <div
@@ -78,7 +79,7 @@ export class FileTreeItem extends React.Component<IItemRendererXProps & IItemRen
                     renaming: isRenamePrompt,
                     prompt: isRenamePrompt || isNewPrompt,
                     new: isNewPrompt,
-                }, fileOrDir, decorations ? decorations.classlist : null, `depth-${item.depth}`)}
+                }, fileOrDir, decorations ? decorations.classlist : null, `depth-${item.depth}`, extraClasses)}
                 data-depth={item.depth}
                 onContextMenu={this.handleContextMenu}
                 onClick={this.handleClick}
