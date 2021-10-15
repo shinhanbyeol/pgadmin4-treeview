@@ -290,12 +290,13 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
          const isOpen = item.isExpanded
          if (item.children && item.children.length > 0) {
              for(let entry of item.children) {
-                 await this.remove(entry).then(val => {}, error => {console.warn(error)})
+                 await this.remove(entry).then(val => {}, error => {console.warn("Error removing item")})
              }
          }
          if (isOpen) {
              await this.fileTreeHandle.closeDirectory(item as Directory)
              await this.fileTreeHandle.openDirectory(item as Directory)
+             await this.changeResolvePath(item as Directory)
              this.changeDirectoryCount(item)
          }
     }
@@ -322,13 +323,15 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
         const fileName = model.root.pathfx.basename(path);
         const parent = item.parent
         if (dirName === parent.path) {
-            const item_1 = parent._children.find((c) => c._metadata.data.id === fileName);
+            const item_1 = parent._children.find((c) => c._metadata && c._metadata.data.id === fileName);
             if (item_1) {
                 parent.unlinkItem(item_1);
                 if (parent._children.length == 0) { parent._children = null }
                 this.changeDirectoryCount(parent)
                 this.events.dispatch(FileTreeXEvent.onTreeEvents, window.event, 'removed', item)
-
+            }
+            else {
+                console.warn("Item not found")
             }
         }
     }
@@ -481,12 +484,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
 
                 await this.events.dispatch(FileTreeXEvent.onTreeEvents, window.event, 'beforeopen', dir)
                 await this.fileTreeHandle.openDirectory(dir as Directory)
-
-                if (dir.children && dir.children.length > 0) {
-                    for(let entry of dir.children) {
-                       entry.resolvedPathCache = entry.parent.path + "/" + entry._metadata.data.id
-                    }
-                }
+                await this.changeResolvePath(dir as Directory)
 
                 if (ref) {
                     ref.style.background = 'none'
@@ -508,22 +506,6 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
         if (ref) {
             const label$ = ref.querySelector('.file-label i') as HTMLDivElement
             label$.className = icon.icon;
-        }
-
-    }
-
-    private addCssClass = async (pathOrDir: string | Directory, cssClass) => {
-        const dir = typeof pathOrDir === 'string'
-            ? await this.fileTreeHandle.getFileHandle(pathOrDir)
-            : pathOrDir
-
-        const ref = FileTreeItem.itemIdToRefMap.get(dir.id);
-        if (ref) {
-            ref.classList.add(cssClass)
-            if (!dir._metadata.data.extraClasses)
-                dir._metadata.data.extraClasses = []
-
-            dir._metadata.data.extraClasses.push(cssClass)
         }
 
     }
@@ -669,6 +651,18 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
         const div = this.wrapperRef.current.listRef.current._outerRef
         div.scroll(scrollXPos, scrollYPos)
 
+    }
+
+    private changeResolvePath = async (item: FileOrDir): Promise<void> => {
+        // Change the path as per pgAdmin requirement: Item Id wise
+        if (item.type === FileType.File) {
+            item.resolvedPathCache = item.parent.path + "/" + item._metadata.data.id
+        }
+        if (item.type === FileType.Directory && item.children && item.children.length > 0) {
+            for(let entry of item.children) {
+                entry.resolvedPathCache = entry.parent.path + "/" + entry._metadata.data.id
+            }
+        }
     }
 }
 
