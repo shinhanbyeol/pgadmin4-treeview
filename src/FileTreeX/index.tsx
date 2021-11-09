@@ -279,10 +279,9 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
         return newItem
     }
 
-    private updateFileOrFolder = async (item, itemData): Promise<void> => {
-        const {create, model } = this.props
-        await update(item, itemData)
-
+    private update = async (item, itemData): Promise<void> => {
+        item._metadata.data = itemData
+        await this.props.update(item.path, itemData)
     }
 
      private refresh = async (item): Promise<void> => {
