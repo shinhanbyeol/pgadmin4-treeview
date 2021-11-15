@@ -31,12 +31,12 @@ export class KeyboardHotkeys {
 
     private jumpToFirstItem = (): void => {
         const { root } = this.fileTreeX.getModel()
-        this.fileTreeX.setActiveFile(root.getFileEntryAtIndex(0))
+        this.fileTreeX.setActiveFile(root.getFileEntryAtIndex(0), true)
     }
 
     private jumpToLastItem = (): void => {
         const { root } = this.fileTreeX.getModel()
-        this.fileTreeX.setActiveFile(root.getFileEntryAtIndex(root.branchSize - 1))
+        this.fileTreeX.setActiveFile(root.getFileEntryAtIndex(root.branchSize - 1), true)
     }
 
     private jumpToNextItem = (): void => {
@@ -54,7 +54,7 @@ export class KeyboardHotkeys {
         if (idx + 1 > root.branchSize) {
             return this.jumpToFirstItem()
         } else if (idx > -1) {
-            this.fileTreeX.setActiveFile(root.getFileEntryAtIndex(idx + 1))
+            this.fileTreeX.setActiveFile(root.getFileEntryAtIndex(idx + 1), true)
         }
     }
 
@@ -73,7 +73,7 @@ export class KeyboardHotkeys {
         if (idx - 1 < 0) {
             return this.jumpToLastItem()
         } else if (idx > -1) {
-            this.fileTreeX.setActiveFile(root.getFileEntryAtIndex(idx - 1))
+            this.fileTreeX.setActiveFile(root.getFileEntryAtIndex(idx - 1), true)
         }
     }
 
@@ -94,7 +94,7 @@ export class KeyboardHotkeys {
             if (currentPseudoActive.type === FileType.Directory && (currentPseudoActive as Directory).expanded) {
                 return this.fileTreeX.closeDirectory(currentPseudoActive as Directory)
             }
-            this.fileTreeX.setActiveFile(currentPseudoActive.parent)
+            this.fileTreeX.setActiveFile(currentPseudoActive.parent, true)
         }
     }
 
@@ -111,7 +111,7 @@ export class KeyboardHotkeys {
         if (currentPseudoActive.type === FileType.Directory) {
             this.fileTreeX.toggleDirectory(currentPseudoActive as Directory)
         } else if (currentPseudoActive.type === FileType.File) {
-            this.fileTreeX.setActiveFile(currentPseudoActive as FileEntry)
+            this.fileTreeX.setActiveFile(currentPseudoActive as FileEntry, true)
         }
     }
 

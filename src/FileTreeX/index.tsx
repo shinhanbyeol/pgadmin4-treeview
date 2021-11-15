@@ -184,7 +184,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
         }
     }
 
-    private setActiveFile = async (fileOrDirOrPath: FileOrDir | string, ensureVisible): Promise<void> => {
+    private setActiveFile = async (fileOrDirOrPath: FileOrDir | string, ensureVisible, align): Promise<void> => {
         const fileH = typeof fileOrDirOrPath === 'string'
             ? await this.fileTreeHandle.getFileHandle(fileOrDirOrPath)
             : fileOrDirOrPath
@@ -201,7 +201,8 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
             this.events.dispatch(FileTreeXEvent.onTreeEvents, window.event, 'selected', fileH)
 
             if (fileH && ensureVisible === true) {
-                await this.fileTreeHandle.ensureVisible(fileH, 'center')
+                const alignTree = align !== undefined && align !== null ? align : 'auto'
+                await this.fileTreeHandle.ensureVisible(fileH, alignTree)
             }
         }
     }
