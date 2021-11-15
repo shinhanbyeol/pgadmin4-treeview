@@ -88,7 +88,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
                 model={model}
                 itemHeight={FileTreeItem.renderHeight}
                 onReady={this.handleTreeReady}
-                ref={this.wrapperRef}>
+                >
                 {(props: IItemRendererProps) => <FileTreeItem
                     item={props.item}
                     itemType={props.itemType}
@@ -663,7 +663,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
     private resize = (scrollX, scrollY) => {
         const scrollXPos = scrollX ? scrollX : 0
         const scrollYPos = scrollY ? scrollY : this.props.model.state.scrollOffset
-        const div = this.wrapperRef.current.listRef.current._outerRef
+        const div = this.wrapperRef.current.querySelector('div').querySelector('div') as HTMLDivElement
         div.scroll(scrollXPos, scrollYPos)
 
     }
