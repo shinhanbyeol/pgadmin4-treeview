@@ -11,7 +11,6 @@ export class KeyboardHotkeys {
         'Enter': () => this.selectFileOrToggleDirState(),
         'Home': () => this.jumpToFirstItem(),
         'End': () => this.jumpToLastItem(),
-        'F2': () => this.triggerRename(),
         'Escape': () => this.resetSteppedOrSelectedItem(),
     }
 
@@ -95,13 +94,6 @@ export class KeyboardHotkeys {
                 return this.fileTreeX.closeDirectory(currentPseudoActive as Directory)
             }
             this.fileTreeX.setActiveFile(currentPseudoActive.parent, true)
-        }
-    }
-
-    private triggerRename(): void {
-        const currentPseudoActive = this.fileTreeX.getActiveFile()
-        if (currentPseudoActive) {
-            this.fileTreeX.rename(currentPseudoActive)
         }
     }
 
