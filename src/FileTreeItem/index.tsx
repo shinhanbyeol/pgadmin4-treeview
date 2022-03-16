@@ -99,7 +99,10 @@ export class FileTreeItem extends React.Component<IItemRendererXProps & IItemRen
                 }
 
                 <span className='file-label'>
-                    <i className={cn('file-icon', item._metadata && item._metadata.data.icon ? item._metadata.data.icon : fileOrDir)} />
+                    {
+                        item._metadata && item._metadata.data.icon ?
+                        <i className={cn('file-icon', item._metadata && item._metadata.data.icon ? item._metadata.data.icon : fileOrDir)} /> : null
+                    }
                     <span className='file-name'>
                         { _.unescape(this.props.item.getMetadata('data')._label)}
                         <span className='children-count'>{itemChildren}</span>
