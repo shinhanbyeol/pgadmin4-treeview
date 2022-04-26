@@ -133,6 +133,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
             getPseudoActiveFile: () => this.pseudoActiveFile,
             setPseudoActiveFile: this.setPseudoActiveFile,
             toggleDirectory: this.toggleDirectory,
+            closeDir: this.closeDir,
             rename: async (fileOrDirOrPath: FileOrDir | string) => this.supervisePrompt(await handle.promptRename(fileOrDirOrPath as any)),
             remove: this.removeDir,
             newFile: async (dirOrPath: Directory | string) => this.supervisePrompt(await handle.promptNewFile(dirOrPath as any)),
@@ -463,6 +464,20 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
         }
 
    }
+
+    private closeDir = async (pathOrDir: string | Directory) => {
+        const dir = typeof pathOrDir === 'string'
+            ? await this.fileTreeHandle.getFileHandle(pathOrDir)
+            : pathOrDir
+
+        if (dir.type === FileType.Directory) {
+            if ((dir as Directory).expanded) {
+                this.fileTreeHandle.closeDirectory(dir as Directory)
+                this.events.dispatch(FileTreeXEvent.onTreeEvents, window.event, 'closed', dir)
+
+            }
+        }
+    }
 
     private toggleDirectory = async (pathOrDir: string | Directory) => {
         const dir = typeof pathOrDir === 'string'
