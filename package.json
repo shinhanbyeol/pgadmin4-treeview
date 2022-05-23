@@ -21,7 +21,7 @@
     "notificar": "^1.0.1",
     "path-fx": "^2.0.0",
     "react": "^16.6.3",
-    "react-aspen": "^1.1.1",
+    "react-aspen": "^1.2.0",
     "react-dom": "^16.6.3",
     "valid-filename": "^2.0.1",
     "lodash": "4.*",
