@@ -62,7 +62,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
     }
 
     render() {
-        const { height, width, model } = this.props
+        const { height, width, model, disableCache } = this.props
         const { decorations } = model
 
         return <div
@@ -88,6 +88,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
                 model={model}
                 itemHeight={FileTreeItem.renderHeight}
                 onReady={this.handleTreeReady}
+                disableCache={disableCache ? disableCache : false}
                 >
                 {(props: IItemRendererProps) => <FileTreeItem
                     item={props.item}
