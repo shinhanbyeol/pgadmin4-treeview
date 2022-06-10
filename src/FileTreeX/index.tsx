@@ -285,6 +285,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
     private update = async (item, itemData): Promise<void> => {
         item._metadata.data = itemData
         await this.props.update(item.path, itemData)
+        this.events.dispatch(FileTreeXEvent.onTreeEvents, window.event, 'updated', item)
     }
 
      private refresh = async (item): Promise<void> => {
