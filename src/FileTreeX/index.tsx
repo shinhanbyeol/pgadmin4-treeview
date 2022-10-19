@@ -160,7 +160,9 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
             setLabel: this.setLabel,
             unload: this.unload,
             deSelectActiveFile: this.deSelectActiveFile,
-            resize: this.resize
+            resize: this.resize,
+            showLoader: this.showLoader,
+            hideLoader: this.hideLoader,
         }
 
         model.decorations.addDecoration(this.activeFileDec)
@@ -297,10 +299,20 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
              }
          }
          if (isOpen) {
+            const ref = FileTreeItem.itemIdToRefMap.get(item.id);
+
+            if (ref) {
+                this.showLoader(ref)
+            }
+
              await this.fileTreeHandle.closeDirectory(item as Directory)
              await this.fileTreeHandle.openDirectory(item as Directory)
              await this.changeResolvePath(item as Directory)
              this.changeDirectoryCount(item)
+
+            if (ref) {
+                this.hideLoader(ref)
+            }
          }
     }
 
@@ -494,9 +506,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
             } else {
                 const ref = FileTreeItem.itemIdToRefMap.get(dir.id);
                 if (ref) {
-                    ref.style.background = 'none'
-                    const label$ = ref.querySelector('i.directory-toggle') as HTMLDivElement
-                    label$.classList.add("loading");
+                    this.showLoader(ref)
                 }
 
                 await this.events.dispatch(FileTreeXEvent.onTreeEvents, window.event, 'beforeopen', dir)
@@ -504,9 +514,7 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
                 await this.changeResolvePath(dir as Directory)
 
                 if (ref) {
-                    ref.style.background = 'none'
-                    const label$ = ref.querySelector('i.directory-toggle') as HTMLDivElement
-                    if (label$) label$.classList.remove("loading");
+                    this.hideLoader(ref)
                 }
 
                 this.events.dispatch(FileTreeXEvent.onTreeEvents, window.event, 'opened', dir)
@@ -541,6 +549,20 @@ export class FileTreeX extends React.Component<IFileTreeXProps> {
             dir._metadata.data.extraClasses.push(cssClass)
         }
 
+    }
+
+    private showLoader = (ref: HTMLDivElement) => {
+        // get label ref and add loading class
+        ref.style.background = 'none'
+        const label$ = ref.querySelector('i.directory-toggle') as HTMLDivElement
+        if (label$)  label$.classList.add("loading")
+    }
+
+    private hideLoader = (ref: HTMLDivElement) => {
+        // remove loading class.
+        ref.style.background = 'none'
+        const label$ = ref.querySelector('i.directory-toggle') as HTMLDivElement
+        if (label$) label$.classList.remove("loading")
     }
 
     private supervisePrompt = (promptHandle: RenamePromptHandle | NewFilePromptHandle) => {
